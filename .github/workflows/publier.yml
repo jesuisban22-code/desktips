@@ -1,0 +1,65 @@
+# Publie une version de Bureau : pousse un tag vX.Y.Z et ce workflow construit
+# l'installeur Windows puis crée la Release GitHub. C'est là que le bouton
+# « Rechercher une mise à jour » de l'application va la chercher.
+#
+#   node app/scripts/version.mjs 0.2.0     (met la version partout)
+#   git commit -am "Bureau 0.2.0" && git tag v0.2.0 && git push --follow-tags
+
+name: Publier une version
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      # Gravé dans l'application : c'est ici qu'elle cherchera ses mises à jour.
+      BUREAU_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Le tag correspond à la version de l'application
+        shell: bash
+        run: |
+          v=$(node -p "require('./app/src-tauri/tauri.conf.json').version")
+          if [ "v$v" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::Le tag ${GITHUB_REF_NAME} ne correspond pas à la version $v de tauri.conf.json. Lance : node app/scripts/version.mjs ${GITHUB_REF_NAME#v}"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "app/src-tauri -> target"
+
+      - name: Dépendances
+        working-directory: app
+        run: npm ci
+
+      - name: Tests du moteur
+        working-directory: app/src-tauri
+        run: cargo test -p bureau-core --lib
+
+      - name: Construire et publier
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: app
+          tagName: ${{ github.ref_name }}
+          releaseName: "Bureau ${{ github.ref_name }}"
+          releaseBody: "Nouvelle version de Bureau. Dans l'application : icône de la barre des tâches → Rechercher une mise à jour."
+          releaseDraft: false
+          prerelease: false

@@ -1,0 +1,12 @@
+[package]
+name = "bureau-stub-tauri"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "tauri"
+path = "src/lib.rs"
+
+[dependencies]
+bureau-stub-macros = { path = "../macros" }
+serde = { version = "1", features = ["derive"] }

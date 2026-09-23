@@ -1,0 +1,3 @@
+# Le dépôt GitHub d'où Bureau tire ses mises à jour : propriétaire/nom.
+# (Le workflow de publication le remplace par son propre dépôt.)
+jesuisban22-code/desktips

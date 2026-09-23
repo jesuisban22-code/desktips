@@ -1,0 +1,19 @@
+# Compiles the REAL shell sources against the stub crates.
+#
+# This is the only way this project can type-check src/lib.rs and src/tray.rs:
+# the genuine Tauri needs a webview toolchain that is not available here, so
+# until now those two files were checked for the first time on the user's
+# machine, fifteen minutes into a build. They broke there twice.
+[package]
+name = "bureau-stub-shell"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bureau-core = { path = "../../core" }
+tauri = { path = "../tauri", package = "bureau-stub-tauri" }
+tauri-plugin-shell = { path = "../plugin-shell", package = "bureau-stub-plugin-shell" }
+tauri-plugin-autostart = { path = "../plugin-autostart", package = "bureau-stub-plugin-autostart" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"

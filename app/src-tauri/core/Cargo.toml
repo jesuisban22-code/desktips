@@ -1,0 +1,31 @@
+# The whole of Bureau's real logic — finding transcripts, tailing them and
+# turning their lines into events — lives here, with no dependency on Tauri.
+#
+# It used to live inside the Tauri crate, which cannot be compiled without a
+# webview toolchain. That meant the watcher was only ever type-checked by the
+# Windows build, and a call passing a PathBuf where a &Source was expected sat
+# in it undetected. Split out, `cargo test` runs it anywhere.
+[package]
+name = "bureau-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+notify = { version = "7", features = ["serde"] }
+notify-debouncer-mini = "0.5"
+anyhow = "1"
+dirs = "5"
+chrono = "0.4"
+
+[dev-dependencies]
+dirs = "5"
+
+[[bin]]
+name = "bureau-scan"
+path = "src/bin/bureau-scan.rs"
+
+[[bin]]
+name = "bureau-hook"
+path = "src/bin/bureau-hook.rs"

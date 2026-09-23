@@ -1,0 +1,254 @@
+/*
+ * overlay.css — the few styles that are not inline: the speech bubbles, which
+ * the actors write into directly, and the animations that must run on the
+ * compositor while the canvas itself is idle.
+ */
+
+.bubble {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  /* Centred above the anchor, which drei's <Html> puts at the point itself. */
+  transform: translate(-50%, calc(-100% - 2px));
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  max-width: 250px;
+  padding: 4px 9px 5px 8px;
+  font: 500 11px/1.25 ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, monospace;
+  color: #ead6b2;
+  background: rgba(22, 15, 7, 0.88);
+  border: 1px solid rgba(205, 176, 128, 0.16);
+  border-left: 2px solid var(--accent, #c3ac86);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  pointer-events: none;
+}
+
+.bubble[data-on="1"] {
+  opacity: 1;
+  transform: translate(-50%, calc(-100% - 7px));
+}
+
+/* The little tail pointing down at the head. */
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  border-right: 1px solid rgba(205, 176, 128, 0.16);
+  border-bottom: 1px solid rgba(205, 176, 128, 0.16);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.bubble-who {
+  color: #8d7c62;
+  font-weight: 600;
+}
+.bubble-who:empty { display: none; }
+
+.bubble-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Waiting on the person: amber, and a slow breath so it is found at a glance. */
+.bubble[data-kind="permission"],
+.bubble[data-kind="question"] {
+  color: #f6e2b4;
+  border-color: rgba(232, 176, 74, 0.55);
+  border-left-color: #e8b04a;
+  animation: bubble-call 1.8s ease-in-out infinite;
+}
+.bubble[data-kind="permission"]::after,
+.bubble[data-kind="question"]::after {
+  border-color: rgba(232, 176, 74, 0.55);
+}
+.bubble[data-kind="idle"] {
+  color: #c3ac86;
+}
+/* Something failed: said in the alarm colour, once. */
+.bubble[data-kind="oops"] {
+  color: #f4b49a;
+  border-left-color: #e07a52;
+}
+.bubble[data-kind="ack"] {
+  border-left-color: #ead6b2;
+}
+
+@keyframes bubble-call {
+  0%, 100% { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(232, 176, 74, 0.0); }
+  50%      { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 5px rgba(232, 176, 74, 0.16); }
+}
+
+/* The banner breathes the same way. */
+.attention-loud {
+  animation: attention-breath 1.8s ease-in-out infinite;
+}
+@keyframes attention-breath {
+  0%, 100% { border-color: rgba(232, 176, 74, 0.40); }
+  50%      { border-color: rgba(232, 176, 74, 0.95); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble, .bubble[data-on="1"] { transition: none; }
+  .bubble[data-kind="permission"], .bubble[data-kind="question"], .attention-loud { animation: none; }
+}
+
+button:focus-visible, input:focus-visible {
+  outline: 2px solid #e8b04a;
+  outline-offset: 2px;
+}
+
+/* ── Panels ───────────────────────────────────────────────────────────────── */
+
+/* Hidden from the settings: the actors keep writing, nobody sees it. */
+html[data-bubbles="off"] .bubble { display: none; }
+
+/* A native scrollbar is a white slab down the side of a dark panel. */
+.bureau-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(205, 176, 128, 0.22) transparent;
+}
+.bureau-scroll::-webkit-scrollbar { width: 8px; }
+.bureau-scroll::-webkit-scrollbar-track { background: transparent; }
+.bureau-scroll::-webkit-scrollbar-thumb {
+  background: rgba(205, 176, 128, 0.20);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.bureau-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(205, 176, 128, 0.34); }
+
+.journal-row { transition: background-color 0.12s ease; }
+.journal-row:hover { background-color: rgba(205, 176, 128, 0.06) !important; }
+
+.journal-running { animation: running 1.2s ease-in-out infinite; }
+@keyframes running {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.7); }
+}
+.task-now { animation: task-now 1.8s ease-in-out infinite; }
+@keyframes task-now {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 176, 74, 0.0); }
+  50%      { box-shadow: 0 0 0 3px rgba(232, 176, 74, 0.18); }
+}
+
+.icon-btn {
+  display: grid; place-items: center;
+  width: 26px; height: 26px; padding: 0;
+  border: none; border-radius: 7px;
+  background: transparent;
+  color: #8d7c62;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.icon-btn:hover { background: rgba(205, 176, 128, 0.10); color: #ead6b2; }
+
+/* The buttons along the top bar. */
+.bar-btn {
+  display: flex; align-items: center; gap: 6px;
+  height: 26px; padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(205, 176, 128, 0.16);
+  background: rgba(205, 176, 128, 0.05);
+  color: #c3ac86;
+  font: 500 11.5px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  flex: 0 0 auto;
+}
+.bar-btn:hover { background: rgba(205, 176, 128, 0.12); color: #ead6b2; }
+.bar-btn[data-on="1"] {
+  background: rgba(232, 176, 74, 0.14);
+  border-color: rgba(232, 176, 74, 0.45);
+  color: #f3dcae;
+}
+
+.text-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 7px;
+  border: 1px solid rgba(205, 176, 128, 0.16);
+  background: transparent; color: #c3ac86;
+  font: 500 11.5px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  cursor: pointer;
+}
+.text-btn:hover { background: rgba(205, 176, 128, 0.10); color: #ead6b2; }
+
+/* ── Settings ─────────────────────────────────────────────────────────────── */
+
+@keyframes settings-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.settings-card {
+  border-radius: 10px;
+  background: rgba(205, 176, 128, 0.04);
+  border: 1px solid rgba(205, 176, 128, 0.10);
+}
+.settings-card > * + * { border-top: 1px solid rgba(205, 176, 128, 0.08); }
+
+.switch {
+  position: relative; flex: 0 0 auto;
+  width: 34px; height: 20px; padding: 0;
+  border-radius: 999px; border: none;
+  background: rgba(205, 176, 128, 0.18);
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+.switch[data-on="1"] { background: #c9a063; }
+.switch:disabled { opacity: 0.4; cursor: default; }
+.switch-knob {
+  position: absolute; top: 3px; left: 3px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #f4e6cc;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: transform 0.18s ease;
+}
+.switch[data-on="1"] .switch-knob { transform: translateX(14px); }
+
+.segmented {
+  display: flex; flex: 0 0 auto;
+  padding: 2px; gap: 2px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(205, 176, 128, 0.10);
+}
+.segmented button {
+  flex: 1;
+  padding: 4px 10px; border-radius: 6px; border: none;
+  background: transparent; color: #8d7c62;
+  font: 500 11.5px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.segmented button:hover { color: #ead6b2; }
+.segmented button[data-on="1"] {
+  background: rgba(205, 176, 128, 0.16);
+  color: #ead6b2;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.range { accent-color: #c9a063; height: 4px; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  .journal-running, .task-now { animation: none; }
+  .switch, .switch-knob { transition: none; }
+}
+
+/* ── Update dialog ────────────────────────────────────────────────────────── */
+
+.text-btn.primary {
+  background: #c9a063; border-color: #c9a063; color: #1c1308; font-weight: 600;
+}
+.text-btn.primary:hover { background: #dab274; color: #1c1308; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(-360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }

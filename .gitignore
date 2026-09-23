@@ -1,0 +1,12 @@
+# Construit, pas écrit
+node_modules/
+app/dist/
+app/src-tauri/target/
+app/src-tauri/gen/
+*.exe
+
+# Personnel : transcriptions de tes sessions et chemins de ta machine
+app/cloud/
+diagnostic.txt
+retirer-declencheur.bat
+.claude/
